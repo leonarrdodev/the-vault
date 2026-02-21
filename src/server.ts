@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { buildApp } from "./app";
 import { initDB } from './core/db/database';
+import { userRoutes } from './modules/users/user.routes';
 
 
 //verifica se esta em desenvolvimento ou em produção para ativar a formatação de logs no terminal
@@ -29,7 +30,7 @@ const start = async () => {
         const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
         const host = process.env.HOST || '0.0.0.0'
         initDB()
-
+        app.register(userRoutes)
 
         await app.listen({port, host})
 
