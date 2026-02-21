@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { generateSalt, deriveKey } from '../../core/crypto/crypto.service'
 import { db } from "../../core/db/database";
 
@@ -31,6 +31,55 @@ export function userRoutes(app: FastifyInstance){
         } catch(error: any){
             app.log.error(`Erro ao criar usuario: ${error.message}`)
             return reply.status(400).send({message: 'Falha ao criar usuario. Talvez o username ja exista'})
+        }
+
+    })
+
+    app.post('/login', async (request, reply) => {
+        const {username, password} = request.body as any
+
+        try{
+            const query = `
+                SELECT salt, password_hash
+                FROM users
+                WHERE username = ?
+                LIMIT 1
+            `
+
+            const values = [username]
+            
+            const user = await new Promise<any>((resolve, reject) => {
+                db.get(query, values, (err, row) => {
+                    if (err) {
+                        reject(err); 
+                    } else {
+                        resolve(row); 
+                    }
+                });
+            });
+
+           
+            if (!user) {
+                return reply.status(401).send({ message: 'Credenciais inválidas' });
+            }
+
+            const masterKey = await deriveKey(password, user.salt);
+            
+            const loginHash = createHash('sha256').update(masterKey).digest('hex');
+
+            const hashBufferEntrada = Buffer.from(loginHash, 'hex');
+            const hashBufferBanco = Buffer.from(user.password_hash, 'hex');
+
+            if (hashBufferEntrada.length !== hashBufferBanco.length || !timingSafeEqual(hashBufferEntrada, hashBufferBanco)) {
+                return reply.status(401).send({ message: 'Credenciais inválidas' });
+            }
+            return reply.status(200).send({ message: 'Login realizado com sucesso!' });
+
+
+
+        } catch(err: any){
+            app.log.error(`Erro ao logar: ${err.message}`)
+            return reply.status(400).send({message: 'Falha ao realizar login'})
         }
 
     })
