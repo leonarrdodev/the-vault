@@ -2,7 +2,8 @@ import 'dotenv/config'
 import { buildApp } from "./app";
 import { initDB } from './core/db/database';
 import { userRoutes } from './modules/users/user.routes';
-
+import fastifyJwt from '@fastify/jwt';
+import { secretRoutes } from './modules/secrets/secret.routes';
 
 //verifica se esta em desenvolvimento ou em produção para ativar a formatação de logs no terminal
 const envLogger = process.env.NODE_ENV === 'development'
@@ -30,8 +31,11 @@ const start = async () => {
         const port = process.env.PORT ? parseInt(process.env.PORT) : 3000
         const host = process.env.HOST || '0.0.0.0'
         initDB()
+        app.register(fastifyJwt, {
+            secret: 'minha_chave_super_secreta_do_cofre_123'
+        })
         app.register(userRoutes)
-
+        app.register(secretRoutes, {prefix: '/secrets'})
         await app.listen({port, host})
 
     } catch(err){

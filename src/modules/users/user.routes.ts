@@ -40,7 +40,7 @@ export function userRoutes(app: FastifyInstance){
 
         try{
             const query = `
-                SELECT salt, password_hash
+                SELECT id, salt, password_hash
                 FROM users
                 WHERE username = ?
                 LIMIT 1
@@ -73,7 +73,18 @@ export function userRoutes(app: FastifyInstance){
             if (hashBufferEntrada.length !== hashBufferBanco.length || !timingSafeEqual(hashBufferEntrada, hashBufferBanco)) {
                 return reply.status(401).send({ message: 'Credenciais inválidas' });
             }
-            return reply.status(200).send({ message: 'Login realizado com sucesso!' });
+            
+            const token = app.jwt.sign({
+                id: user.id,
+                username: user.username
+            }, {
+                expiresIn: '2h'
+            })
+
+            return reply.status(200).send({
+                message: 'Login realizado com sucesso!',
+                token: token
+            })
 
 
 
