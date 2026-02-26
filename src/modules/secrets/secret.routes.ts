@@ -15,7 +15,7 @@ export async function secretRoutes(app: FastifyInstance){
     //rota para salvar segredo
     app.post('/', async (request, reply) => {
         const {id: userId} = request.user as any
-        const {title, secretValue, masterPassword} = request.body as any
+        const {title, secretValue,  } = request.body as any
 
 
         try{
@@ -67,6 +67,33 @@ export async function secretRoutes(app: FastifyInstance){
         } catch(err: any){
             app.log.error(`Erro ao criar segredo: ${err.message}`)
             return reply.status(500).send({message: 'Falha ao criar segredo!'})
+        }
+    })
+
+    //buscar segredos
+    app.get('/', async (request, reply) => {
+         const {id: userId} = request.user as any
+        try{
+            const query = `
+                SELECT id, title
+                FROM secrets
+                WHERE user_id = ?
+            `
+            const values = [userId]
+            const secrets = await new Promise<any>((resolve, reject) => {
+                db.all(query, values, function(err, rows){
+                    if(err){
+                        reject(err)
+                    } else{
+                        resolve(rows)
+                    }
+                })
+
+            })
+            return reply.status(200).send(secrets)
+        } catch(err: any){
+            app.log.error(`Erro ao buscar segredos: ${err.message}`)
+            return reply.status(500).send({message: 'Falha ao buscar segredos'})
         }
     })
 }
