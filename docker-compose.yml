@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  api-segredos:
+    build: .
+    container_name: secret-manager-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # MUITO IMPORTANTE: Salva o banco SQLite na sua máquina hospedeira
+      # Tudo o que o container gravar em /data ficará salvo na pasta ./data do seu Debian
+      - ./data:/usr/src/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Você pode passar o segredo do JWT por aqui ou usar um arquivo .env
+      - JWT_SECRET=sua_chave_secreta_do_jwt_aqui
+      - DB_PATH=/usr/src/app/data/database.sqlite

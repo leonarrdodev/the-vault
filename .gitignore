@@ -11,5 +11,6 @@ npm-debug.log*
 database/*.sqlite
 database/*.sqlite-journal
 *.db
+*.db-journal
 .DS_Store
 Thumbs.db

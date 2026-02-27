@@ -1,12 +1,16 @@
 import sqlite3 from "sqlite3";
+import path from "path";
+
 const sqlite = sqlite3.verbose()
 
-export const db = new sqlite.Database('./vault.db', (err) => {
-    if(err){
-        return console.error('Falha no banco de dados', err.message)
-    }
-        return console.log('Conexão com o SQLite estabelecida')
+// Se estiver no Docker (prod), usa a variável de ambiente. Se estiver local (dev), cria na raiz do projeto.
+const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../../database.sqlite')
 
+export const db = new sqlite.Database(dbPath, (err) => {
+    if(err){
+        return console.error('Falha no banco de dados:', err.message)
+    }
+    return console.log(`Conexão com o SQLite estabelecida em: ${dbPath}`)
 })
 
 export function initDB(){
@@ -26,8 +30,8 @@ export function initDB(){
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL REFERENCES users(id),
                 title TEXT NOT NULL,
-                encrypted_data VARCHAR(255)NOT NULL
+                encrypted_data VARCHAR(255) NOT NULL
             )
-            `)
+        `)
     })
 }

@@ -34,7 +34,7 @@ const start = async () => {
         app.register(fastifyJwt, {
             secret: 'minha_chave_super_secreta_do_cofre_123'
         })
-        app.register(userRoutes)
+        app.register(userRoutes, {prefix: '/users'})
         app.register(secretRoutes, {prefix: '/secrets'})
         await app.listen({port, host})
 
