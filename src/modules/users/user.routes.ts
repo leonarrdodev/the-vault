@@ -85,8 +85,7 @@ export function userRoutes(app: FastifyInstance){
                 message: 'Login realizado com sucesso!',
                 token: token
             })
-
-
+            
 
         } catch(err: any){
             app.log.error(`Erro ao logar: ${err.message}`)
